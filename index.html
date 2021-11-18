@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+<script type="text/javascript" charset="UTF-8"></script>
+<html lang="en">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,user-scalable=no" />
+<title>Tales of Crypto Staking</title>
+<link rel="stylesheet" href="style.css" type="text/css" />  
+
+<script src="waxjs.js"></script>
+<script src="https://unpkg.com/anchor-link@3"></script>
+<script src="https://unpkg.com/anchor-link-browser-transport@3"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<body style="background-color: #480663">
+    <div id="toast" style="visibility: hidden"></div>
+    <div id="walletlist" style="visibility: hidden">
+        <div>
+            <button class="close" onclick="WalletListVisible(!1)">x</button>
+        </div>
+        <div id="choose">Choose Wallet</div>
+        <div>
+            <button id="wcw" onclick='selectWallet("cloud")'>
+                WAX Cloud Wallet
+            </button>
+        </div>
+        <div>
+            <button id="anchor" onclick='selectWallet("anchor")'>Anchor</button>
+        </div>               
+
+    </div>
+    <div id="message" style="visibility: hidden">
+        <div><button class="close" onclick="HideMessage()">x</button></div>
+        <div id="messagecontent"></div>
+    </div>
+
+
+    <div class="container">
+        <div class="navbar">
+            <div class="title">
+                <u style="
+              text-decoration-color: yellow;
+              text-decoration-line: underline;
+              text-decoration-thickness: 10px;
+            ">Tales of Crypto Staking</u>
+            </div>
+            <div id="loggedout">
+                <button class="login" onclick="WalletListVisible(!0)">LOGIN</button>
+            </div>
+            <div id="loggedin" style="display: none">
+                <span id="accountname"></span>
+                <button class="logout" onclick="logout()">LOGOUT</button>
+                <span id="balance"></span>
+            </div>
+        </div>
+        <div id="dashboard"></div>
+        <div><button class="stakedbtn">staked assets</button>
+        <button class="stakedbtn">unstaked assets</button></div>
+
+        <div id="menu"></div>
+
+        <div class="content">        
+
+            <div class="rightContent">
+
+            </div>
+            <div class="leftContent">
+                <div id="loggedin">
+                   
+                </div>
+
+            </div>
+
+        </div>
+        <div class="bottomBar">
+            
+
+        </div>
+    </div>
+
+    <script>
+        const contract = "talesstaking";
+
+
+    </script>
+    <script src="./main.js"></script>
+</body>
+
+</html>
