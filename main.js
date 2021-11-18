@@ -21,8 +21,7 @@ else
   ratespromise = GetRates();
   rates = await ratespromise;
 
-  userpromise = GetUser(rates);
-  user = await userpromise;
+
 
 
  assetPromise=GetAssets(rates);
@@ -30,7 +29,10 @@ else
 
   stakepromise=FilterStaked(assets);
   staked= await stakepromise;
-  
+
+  userpromise = GetUser(rates,staked);
+  user = await userpromise;
+
   balancepromise=GetBalance();
   balance= await balancepromise;
 
@@ -245,7 +247,7 @@ async function FilterStaked(assets) {
 
 }
 
-async function GetUser()
+async function GetUser(rates)
 {
   
 var path = "/v1/chain/get_table_rows";
@@ -266,19 +268,31 @@ const response = await fetch("https://" + endpoint + path, {
 });
 
 const body = await response.json();
+
 var user ={
       stakePower:0,
       next_claim: "-",
       unclaimed_amount : 0,
 };
 if (body.rows.length != 0) {
-  for(let i=0;i<body.rows.length;i++)
-  {
-    if(body.rows[i].account="slicksheep12")
+
+    if(body.rows[0].account=wallet_userAccount)
 {
-  user.stakePower=10;
-}
+  for(let j=0;j<body.rows[0].data.length;j++)
+  {
+    for(let k=0;k<body.rows[0].data[j].inventory.length;k++)
+    {
+      for(let m=0;m<rates[0].levels.length;m++)
+      {
+      if (body.rows[0].data[j].inventory[k].key==rates[0].levels[m].key)
+      {
+        user.stakePower+=body.rows[0].data[j].inventory[k].value*rates[0].levels[m].value;
+      }
+      }
+    }
   }
+}
+  
 }
 return user;
 
@@ -495,14 +509,14 @@ function PopulateMenu(staked,unstakeasset,user,balance) {
   +'<br><button class="buy"onClick="stakeall('+ ')">Stake all</button></div>';   
 
   for (var index = 0; index < unstaked.length; ++index) {
-    menu += '<div><div class="stakeamount">' +"Name -"+ unstaked[index].name +'</div>';
+    menu += '<div class="gridelement"><div class="stakeamount">' +"Name -"+ unstaked[index].name +'</div>';
 
     menu += '<div class="stakeamount">'+
     ' <a href="' +
     src2 +unstaked[index].asset_id+' "style="text-decoration:underline;" target="_blank" >'
      +"Asset ID -"+ unstaked[index].asset_id 
      +"</a></div>";
-    menu += '<div><div class="stakeamount">' +"Rate per day -"+ unstaked[index].rateperday.toFixed(4) +'</div>';
+    menu += '<div class="stakeamount">' +"Rate per day -"+ unstaked[index].rateperday.toFixed(4) +'</div>';
 
     menu += '<div > <img class="nftimage" src='+ src +  unstaked[index].img +'></div>';   
     menu += !staked?'<div ><button class ="buy" onClick="stakeasset('+unstaked[index].asset_id+ ')">Stake asset</button></div></div>':
