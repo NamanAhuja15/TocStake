@@ -8,6 +8,7 @@ const tokenContract = { WAX: "eosio.token" };
 var anchorAuth="owner";
 main();
 var loggedIn = false;
+var switchtostaked=true;
 
 
 async function main() {
@@ -34,6 +35,8 @@ else
   balance= await balancepromise;
 
   unstaked= FilterUnstaked(assets,staked);
+
+
   PopulateMenu(staked,unstaked,user,balance);
 }
 }
@@ -41,6 +44,11 @@ else
 
 async function stakeall() {
 
+  if(unstaked.length==0)
+{
+  ShowToast("No unstaked assets!");
+return;
+}
   if (loggedIn) {
 
     HideMessage();
@@ -50,10 +58,8 @@ async function stakeall() {
     {
       ids.push(parseInt(unstaked[i].asset_id));
     }
-    console.log(ids);
     try {
 
-   console.log(unstaked);
       const result = await wallet_transact([
         {
           account: contract,
@@ -76,6 +82,7 @@ async function stakeall() {
     }
   
   }else {
+
     WalletListVisible(true);}
 }
 
@@ -85,7 +92,6 @@ async function stakeasset(assetId) {
 
     HideMessage();
 
-    console.log(assetId);
     try {
 
       var data1=
@@ -123,7 +129,6 @@ async function unstakeasset(assetId) {
 
     HideMessage();
 
-    console.log(assetId);
     try {
 
       var data1=
@@ -159,7 +164,6 @@ async function claimbalance() {
 
     HideMessage();
 
-    console.log(assetId);
     try {
 
       var data1=
@@ -233,10 +237,10 @@ async function FilterStaked(assets) {
 
   const body = await response.json();
 
-
-  if(body.rows.length!=0 && body.rows[0].owner==wallet_userAccount && body.rows[0].asset_id==assets[i].asset_id)
+ if(body.rows.length!=0  && body.rows[0].asset_id==assets[i].asset_id &&body.rows[0].account==wallet_userAccount)
     results.push(assets[i]);
   }
+  console.log(results);
  return results;
 
 }
@@ -276,7 +280,6 @@ if (body.rows.length != 0) {
 }
   }
 }
-console.log(user);
 return user;
 
 
@@ -305,8 +308,6 @@ for(let i=0;i<body.data.length;i++)
   if(level!="none")
   {
 var rate=0;
-console.log(rates);
-console.log(data);
 
     for(let j=0;j<rates.length;j++)
     {
@@ -333,7 +334,6 @@ console.log(data);
   );
   }
 }
-console.log(results);
 
     return results;
 }
@@ -373,7 +373,6 @@ if (body.rows.length != 0) {
   }
 
 }
-console.log(rates);
 return rates;
 }
 
@@ -470,30 +469,29 @@ async function GetBalance() {
         balance.wax= Math.floor(parseFloat(body1.rows[j].balance));
     }
   }
-console.log(balance);
     return balance;
 
 }
 
 
-function PopulateMenu(staked,unstaked,user,balance) {
+function PopulateMenu(staked,unstakeasset,user,balance) {
   var menu = "";
   var dashboard= "";
 
   var symbol = "WAX";
   let src = "https://ipfs.wecan.dev/ipfs/";   
   let src2="https://wax-test.atomichub.io/explorer/asset/";
+  var unstaked = switchtostaked?staked:unstakeasset;
 
   var ids=[];
   for(let i=0;i<unstaked.length;i++)
   {
     ids.push(parseInt(unstaked[i].asset_id));
   }
-  console.log(ids);
   dashboard+='<div class ="dashboard">'+'<br><div class="dashtxt">Total stake power:-'+user.stakePower+ ' ZOMB/day </div>'
   +'<br><div class="dashtxt">Time to claim:-'+user.next_claim+ '</div>'
   +'<br><div class="dashtxt">Unclaimed amount:-'+balance.zomby+ '</div>'
-  +'<br><button class="buy">Claim balance</button>'
+  +'<br><button class="buy" onClick="claimbalance()">Claim balance</button>'
   +'<br><button class="buy"onClick="stakeall('+ ')">Stake all</button></div>';   
 
   for (var index = 0; index < unstaked.length; ++index) {
@@ -507,7 +505,8 @@ function PopulateMenu(staked,unstaked,user,balance) {
     menu += '<div><div class="stakeamount">' +"Rate per day -"+ unstaked[index].rateperday.toFixed(4) +'</div>';
 
     menu += '<div > <img class="nftimage" src='+ src +  unstaked[index].img +'></div>';   
-    menu += '<div ><button class ="buy" onClick="stakeasset('+unstaked[index].asset_id+ ')">Stake asset</button></div></div>';   
+    menu += !staked?'<div ><button class ="buy" onClick="stakeasset('+unstaked[index].asset_id+ ')">Stake asset</button></div></div>':
+    '<div ><button class ="buy" onClick="unstakeasset('+unstaked[index].asset_id+ ')">Unstake asset</button></div></div>';   
 
   }
 
@@ -520,7 +519,12 @@ document.getElementById("dashboard").innerHTML = dashboard;
 }
 
 
+function switchstaked(index)
+{
 
+switchtostaked=index;
+    PopulateMenu(staked,unstaked,user,balance);
+}
 
 function CustomInputChanged() {
   var element = document.getElementById("custominput");
@@ -718,9 +722,7 @@ async function wallet_login() {
     }
     wallet_userAccount = String(wallet_session.auth).split("@")[0];
     auth=String(wallet_session.auth).split("@")[1];
-    console.log(auth);
     anchorAuth=auth;
-    //console.log(anchorAuth);    
 
   } else {
     wallet_userAccount = await wax.login();
@@ -747,6 +749,5 @@ async function wallet_transact(actions) {
       { blocksBehind: 3, expireSeconds: 30 }
     );
   }
-  main();
   return result;
 }
